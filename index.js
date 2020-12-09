@@ -48,16 +48,8 @@ const get = (profile, command, color) => {
 }
 
 const print = (entry) => {
-  let mapped = {
-    task: entry.message.task,
-    timestamp: entry.message.timestamp,
-    error: entry.message.message,
-  }
-  if (entry.message.details) mapped.order = entry.message.details.order
   if (argv.json) return log(JSON.stringify(entry)) 
-
-  if (typeof entry.message !== 'object') mapped = entry.message
-  log(chalk[entry.COLOR]('[', entry.SERVICE, ']', JSON.stringify(mapped, null, '  ')))
+  log(chalk[entry.COLOR]('[', entry.SERVICE, ']', JSON.stringify(entry.message, null, '  ')))
 }
 
 const run = async () => {
