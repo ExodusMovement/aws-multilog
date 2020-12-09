@@ -7,7 +7,7 @@ Uses AWS CloudWatch Insights to query multiple log groups across multiple STS ro
 ### installation
 
 ```
-npm i aws-multilog -g
+npm i @exodus/aws-multilog -g
 ```
 
 Requirements: 
