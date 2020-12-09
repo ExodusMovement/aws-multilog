@@ -72,13 +72,15 @@ $ aws-multilog
 $ aws-multilog 1h
 # all messages in last hour
 
-$ aws-multilog --query "fields @message, @timestamp | filter level = "error"'
+$ aws-multilog --filter 'level = "error"'
 # only get log level error (assuming your logs are json w/ "level": "error")
 ```
 
 #### options
 
 - `-q` - quiet mode
+- `-v` - verbose mode (show query metadata)
+- `--filter` - shorthand for adding a insights filter
 - `--time` - specify custom time, i.e. 5m or 1h
 - `--json` - ndjson outpout 
 - `--query` - specify custom insights query string

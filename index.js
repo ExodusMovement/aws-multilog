@@ -11,7 +11,8 @@ const config = require(os.homedir() + '/.aws/multilog.json')
 
 var argv = require('minimist')(process.argv.slice(2))
 
-let insightsQuery = argv.query || 'fields @message, @timestamp'
+let insightsQuery = argv.query || 'fields @timestamp, @message'
+if (argv.filter) insightsQuery += ' | filter ' + argv.filter
 
 const time = argv.time || '5m'
 if (!argv.q) console.error('Querying logs for time window', time, 'with query:', insightsQuery)
@@ -22,17 +23,7 @@ const get = (profile, command, color) => {
   return new Promise((resolve, reject) => {
     const spawned = child.spawn("bash", ["-c", command])
     const transform = (data, enc, next) => {
-      let msg
-      try {
-        let obj = JSON.parse(data)
-        msg = {
-          SERVICE: profile,
-          COLOR: color,
-          message: obj
-        }
-      } catch (e) {
-        msg = {SERVICE: profile, COLOR: color, message: data.toString()}
-      }
+      let msg = {SERVICE: profile, COLOR: color, message: data.toString()}
       results.push(msg)
       next()
     }
@@ -86,13 +77,35 @@ qaws --groups '${c.groups.join("' '")}' --time '${time}' --query '${insightsQuer
   let times = []
   let noTimes = []
   results.map((result) => {
-    if (result.message.timestamp) {
-      times.push(result)
+    let timestamp
+    let message = result.message
+    if (message[10] === ' ' && message[23] === ',' && message[24] === ' ') {
+      let parts = message.split(',')
+      timestamp = parts.shift()
+      message = parts.join(',')
+    } else {
+      timestamp = message.timestamp
     }
-    else noTimes.push(result)
+
+    try {
+      message = JSON.parse(message.trim())
+    } catch (e) {
+      // ignore
+    }
+    
+    let modified = { ...result }
+    modified.message = message
+    modified.timestamp = timestamp
+
+    if (timestamp) {
+      times.push(modified)
+    } else {
+      noTimes.push(modified)
+    }
   })
-  noTimes.forEach(print)
-  times.sort((a, b) => a.message.timestamp.localeCompare(b.message.timestamp))
+
+  if (argv.v) noTimes.forEach(print)
+  times.sort((a, b) => a.timestamp.localeCompare(b.timestamp))
   times.forEach(print)
 }
 
