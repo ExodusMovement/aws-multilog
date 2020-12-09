@@ -1,6 +1,6 @@
 {
   "name": "@exodus/aws-multilog",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "uses AWS CloudWatch Insights to query multiple log groups across multiple STS roles in parallel, and then combines and sorts them all by timestamp",
   "main": "index.js",
   "bin": {
