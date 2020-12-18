@@ -13,9 +13,11 @@ var argv = require('minimist')(process.argv.slice(2))
 
 let insightsQuery = argv.query || 'fields @timestamp, @message'
 if (argv.filter) insightsQuery += ' | filter ' + argv.filter
+if (argv.limit) insightsQuery += ' | limit ' + argv.limit
 
 const time = argv.time || '5m'
-if (!argv.q) console.error('Querying logs for time window', time, 'with query:', insightsQuery)
+const end = argv.end || ''
+if (!argv.q) console.error('Querying logs for time window', time + (end ? ' ' + end : ''), 'with query:', insightsQuery)
 
 const results = []
 
@@ -55,14 +57,18 @@ const print = (entry) => {
 const run = async () => {
   const cmds = {}
   config.map((c) => {
+    const command = `eval \`awsume ${c.profile} -s\` 
+qaws --groups '${c.groups.join("' '")}' --time '${time}'${end ? " '" + end + "'": ""} --query '${insightsQuery}'`
     cmds[c.profile] = {
-      command: `eval \`awsume ${c.profile} -s\` 
-qaws --groups '${c.groups.join("' '")}' --time '${time}' --query '${insightsQuery}'`,
+      command: command,
       color: c.color,
       profile: c.profile
     }
   })
-  const promises = Object.keys(cmds).map((key) => {
+  let keys = Object.keys(cmds)
+  if (argv.profile) keys = keys.filter((c) => { return c === argv.profile })
+  const promises = keys.map((key) => {
+    if (argv.v) console.log(cmds[key].command)
     return get(cmds[key].profile, cmds[key].command, cmds[key].color)
   })
   await Promise.all(promises)

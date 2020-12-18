@@ -69,11 +69,17 @@ Create the file `~/.aws/multilog.json` to hold your log group configuration:
 $ aws-multilog
 # defaults to 5 minutes, queries all messages
 
-$ aws-multilog 1h
+$ aws-multilog --time 1h
 # all messages in last hour
 
 $ aws-multilog --filter 'level = "error"'
 # only get log level error (assuming your logs are json w/ "level": "error")
+
+$ aws-multilog --time 1h --end 30m
+# all messages between 1h to 30min ago
+
+$ aws-multilog --limit 9999
+# default is 1000, max is 9999
 ```
 
 #### options
@@ -81,6 +87,8 @@ $ aws-multilog --filter 'level = "error"'
 - `-q` - quiet mode
 - `-v` - verbose mode (show query metadata)
 - `--filter` - shorthand for adding a insights filter
-- `--time` - specify custom time, i.e. 5m or 1h
+- `--time` - specify custom start time, i.e. 5m or 1h
+- `--end` - specify end time
 - `--json` - ndjson outpout 
 - `--query` - specify custom insights query string
+- `--limit` - default 1000, max 9999
